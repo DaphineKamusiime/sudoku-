@@ -1,0 +1,70 @@
+import pygame
+import requests
+
+
+WIDTH=500
+background_color=(251,246,245)
+original_grid_element_color=(52,31,151)#setting colour for the original grid elements
+#setting color of grid elemnts
+original_grid_element_color=(52,31,151)
+#sending http request 
+#importing a sudoku board
+
+response=requests.get("https://sugoku.herokuapp.com/")
+grid=response.json()['board']
+grid_original=[[grid[x][y] for y in range(len(grid[0]))] for x in range(len(grid))]
+ 
+#
+def insert(window,block_position):
+    i,j=block_position[1],block_position[0]
+    myfont=pygame.font.SysFont('Comic sans MS',35)
+    
+    while True :
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:#if person is quitting
+                return
+            if event.type==pygame.KEYDOWN:#if user tries to edit original values,edit input or adding value
+                if (grid_original[i-1][j-1]!=0):#if original grid element is not empty 
+                    return
+                if (event.key==48):#checking if value is 0 i.e 48 is 0 in acsii
+                    grid[i-1][j-1]=event.key-48 #update value
+                    
+                                 
+def main():
+    pygame.init()
+    win=pygame.display.set_mode((WIDTH,WIDTH))
+    pygame.display.set_caption("SUDOKU")
+    win.fill(background_color)
+    myfont=pygame.font.SysFont('Comic sans MS',35)
+    
+    #creating a grid
+    #creating the cordinates
+    #using 50 interval for each iteration 
+    for i in range(0,10):
+        #creating bold lines for every 3*3 block grids
+        if (i%3==0):
+            pygame.draw.line(win,(0,0,0),(50+50*i,50),(50+50*i,500),4)#vertical line
+            pygame.draw.line(win,(0,0,0),(50,50+50*i),(500,50+50*i),4)#horizontal line
+        
+        pygame.draw.line(win,(0,0,0),(50+50*i,50),(50+50*i,500),2)#vertical line
+        pygame.draw.line(win,(0,0,0),(50,50+50*i),(500,50+50*i),2)#horizontal line
+            
+    pygame.display.update()
+    #i==vertucal j==horizontal
+    for i in range(0,len(grid[0])):
+        for j in range(0,len(grid[0])):
+            if(0<grid[i][j]<10):
+                value=myfont.render(str(grid[i][j]),True, original_grid_element_color)
+                win.blit(value,((j+1)*50+15,(i+1)*50+15)) #adding text to screen
+    
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type==pygame.MOUSEBUTTONUP and event.button==1:
+                position=pygame.mouse.get_pos()
+                insert(window,(position//50,position))
+            if event.type==pygame.QUIT:
+                pygame.quit()
+                return
+            
+main()
